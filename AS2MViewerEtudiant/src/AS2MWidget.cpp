@@ -90,6 +90,37 @@ bool AS2MWidget::fillMono()
 void AS2MWidget::fillAnag()
 {
 /// --- TODO : Calculs des images anaglyphes
+    //insertion des deux images d'entrée et on inclut le swap eyes en prevision
+    for (int i=0;i < imgMono.size()-1;i++) {
+
+        QImage imageD = imgMono[i].copy();
+        QImage imageG = imgMono[i+1].copy();
+
+        //image de sortie pour du RB
+        QImage imageRB = imgMono[i].copy();
+        //image de sortie pour du RC
+        QImage imageRC = imgMono[i].copy();
+
+        for (int ligne=0;ligne < imageG.width();ligne++) {
+            for (int colonne=0;colonne < imageG.height();colonne++) {
+
+                //Récupération des composantes couleurs de l'image de droite
+                QRgb  colorD = imageD.pixel(ligne,colonne);
+               //Récupération des composantes couleurs de l'image de gauche
+               QRgb  colorG = imageG.pixel(ligne,colonne);
+
+               //modification des pixels
+               imageRB.setPixel(ligne,colonne, qRgb(qRed(colorG),(qGreen(colorG) + qGreen(colorD))/2, qBlue(colorD)));
+
+               imageRC.setPixel(ligne,colonne, qRgb(qRed(colorG),qGreen(colorD), qBlue(colorD)));
+            }
+        }
+
+        //insertion dans les tableaux respectifs
+        imgAnagRB.append(imageRB);
+        imgAnagRC.append(imageRC);
+    }
+
 
 }
 
@@ -124,7 +155,7 @@ void AS2MWidget::paintMono() const
 /// --- TODO : Dessin de l'image mono
     //parcours du tableau des images en mono
     for(int i = 0; i < imgMono.size(); i++){
-        QImage img_i = imgMono[i].copy();
+        QImage img_i = imgMono[i];
         //Dessiner l'image mono située à la position i dans le tableau des images mono
         paintImage(img_i);
     }
@@ -136,7 +167,7 @@ void AS2MWidget::paintStereo() const
 /// --- TODO : Dessin du couple de vues stéréoscopiques
 
     if(!this->swapEyes){
-            std::cout << !this->swapEyes << std::endl;
+            //std::cout << !this->swapEyes << std::endl;
             // Sélection du buffer correspondant à l'œil gauche.
             glDrawBuffer(GL_BACK_LEFT);
             // Dessin de l’image gauche
@@ -146,10 +177,11 @@ void AS2MWidget::paintStereo() const
             glDrawBuffer(GL_BACK_RIGHT);
             // Dessin de l’image droite
             paintImage(imgMono[0]);
+            //Qred_Qbue ...
 
 
     }else{
-        std::cout << !this->swapEyes << std::endl;
+        //std::cout << !this->swapEyes << std::endl;
         // Sélection du buffer correspondant à l'œil droit.
         glDrawBuffer(GL_BACK_RIGHT);
         // Dessin de l’image droite
@@ -167,13 +199,22 @@ void AS2MWidget::paintStereo() const
 void AS2MWidget::paintAnagRB() const
 {
 /// --- TODO : Dessin du couple de vues en anaglyphe rouge-bleu
+    //parcours du tableau des images en mono
+    for(int i = 0; i < imgAnagRB.size(); i++){
+        //Dessiner l'image mono située à la position i dans le tableau des images mono
+        paintImage(imgAnagRB[i]);
+    }
 
 }
 
 void AS2MWidget::paintAnagRC() const
 {
 /// --- TODO : Dessin du couple de vues en anaglyphe rouge-cyan
-
+    //parcours du tableau des images en mono
+    for(int i = 0; i < imgAnagRC.size(); i++){
+        //Dessiner l'image mono située à la position i dans le tableau des images mono
+        paintImage(imgAnagRC[i]);
+    }
 }
 
 void AS2MWidget::paintMulti() const
@@ -204,7 +245,13 @@ void AS2MWidget::paintGL()
     //paintMono();
 
     //Dessin de l'image avec le rendu stereo
-    paintStereo();
+    //paintStereo();
+
+    //Dessin de l'image avec le rendu anaglyphe rouge bleu
+    paintAnagRB();
+
+    //Dessin de l'image avec le rendu anaglyphe rouge cyan
+    //paintAnagRC();
 }
 
 void AS2MWidget::keyPressEvent(QKeyEvent *event)
