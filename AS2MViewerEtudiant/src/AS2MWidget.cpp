@@ -4,6 +4,8 @@
 #include <QKeyEvent>
 #include <QtDebug>
 #include <QDir>
+#include <iostream>
+#include <cstdlib>
 
 const int     AS2MWidget::nbImages  = 8;
 const QSize   AS2MWidget::sizeMulti = QSize(1920,1080);
@@ -133,26 +135,33 @@ void AS2MWidget::paintStereo() const
 {
 /// --- TODO : Dessin du couple de vues stéréoscopiques
 
-    for (int i = 0; i < 50; ++i) {
-        if (i< 26){
-            if(imagesLoaded()){
-                // Sélection du buffer correspondant à l'œil droit.
-                glDrawBuffer(GL_BACK_RIGHT);
+    if(!this->swapEyes){
+            std::cout << !this->swapEyes << std::endl;
+            // Sélection du buffer correspondant à l'œil gauche.
+            glDrawBuffer(GL_BACK_LEFT);
+            // Dessin de l’image gauche
+            paintImage(imgMono[1]);
 
-                // Dessin de l’image droite
-                paintMono();
-            }
-        }
-        else{
-            if(imagesLoaded()){
-                // Sélection du buffer correspondant à l'œil gauche.
-                glDrawBuffer(GL_BACK_LEFT);
+            // Sélection du buffer correspondant à l'œil droit.
+            glDrawBuffer(GL_BACK_RIGHT);
+            // Dessin de l’image droite
+            paintImage(imgMono[0]);
 
-                // Dessin de l’image gauche
-                paintMono();
-            }
-        }
+
+    }else{
+        std::cout << !this->swapEyes << std::endl;
+        // Sélection du buffer correspondant à l'œil droit.
+        glDrawBuffer(GL_BACK_RIGHT);
+        // Dessin de l’image droite
+        paintImage(imgMono[0]);
+
+        // Sélection du buffer correspondant à l'œil gauche.
+        glDrawBuffer(GL_BACK_LEFT);
+        // Dessin de l’image gauche
+        paintImage(imgMono[1]);
     }
+
+
 }
 
 void AS2MWidget::paintAnagRB() const
@@ -211,7 +220,8 @@ void AS2MWidget::keyPressEvent(QKeyEvent *event)
 
         /// --- TODO : échange de l'affichage des images gauche-droite
     case Qt::Key_S :
-        this->swapEyes = true;
+        this->swapEyes = !this->swapEyes;
+        break;
 
         /// --- TODO : sauvegarde des images anaglyphes et de l'image composite multiscopique
 
