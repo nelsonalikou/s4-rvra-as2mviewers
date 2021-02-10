@@ -6,6 +6,7 @@
 #include <QDir>
 #include <iostream>
 #include <cstdlib>
+#include <QtGlobal>
 
 const int     AS2MWidget::nbImages  = 8;
 const QSize   AS2MWidget::sizeMulti = QSize(1920,1080);
@@ -45,7 +46,7 @@ bool AS2MWidget::imagesLoaded() const
             this->imgMono.size() == AS2MWidget::nbImages;
 
 // renvoie vrai initialement sinon l'application se termine sans afficher la fenêtre
-    return true;
+    //return true;
 }
 
 // méthode pour charger une série d'images dans un QVector
@@ -135,6 +136,49 @@ void AS2MWidget::fillMult()
 {
 /// --- TODO : Calcule l'image composite pour l'écran multiscopique
 
+    //Parcours des pixels d'une image (elles ont toutes la même dimension
+    QImage imageMulti = imgMono[0].copy();
+    for (int ligne=0;ligne < imageMulti.width();ligne++) {
+        for (int colonne=0;colonne < imageMulti.height();colonne++) {
+
+           double  redComponent = 0;
+           double  greenComponent = 0;
+           double  blueComponent = 0;
+
+            //Parcours du tableau des images mono pour chaque pixel
+            for (int i=0;i < imgMono.size();i++) {
+                //création du QColor lié à l'image
+                QColor imgColor = imgMono[i].pixel(ligne,colonne);
+
+                //création du QColor lié à l'image
+                QColor  maskColor = imgMask[i].pixel(ligne,colonne);
+
+                //Pour chacune des images j'ajoute sa composante RGB dans la variable correspondante
+                redComponent += imgColor.redF() * maskColor.redF();
+                greenComponent += imgColor.greenF() * maskColor.greenF();
+                blueComponent += imgColor.blueF() * maskColor.blueF();
+
+            }
+
+            //création du QColor de mon image finale
+            QColor color = QColor();
+
+            //remplissage des composantes de color
+            color.setRedF(qBound(0.0,redComponent,1.0));
+            color.setGreenF(qBound(0.0,greenComponent,1.0));
+            color.setBlueF(qBound(0.0,blueComponent,1.0));
+            /*color.setRedF(0.0);
+            color.setGreenF(0.0);
+            color.setBlueF(0.0);*/
+
+            //Mise à jour de la couleur du pixel
+            imageMulti.setPixel(ligne,colonne, color.rgb());
+
+        }
+    }
+    //image de sortie pour du multi
+    this->imgMult = imageMulti;
+
 }
 
 void AS2MWidget::saveMult() const
@@ -220,7 +264,8 @@ void AS2MWidget::paintAnagRC() const
 void AS2MWidget::paintMulti() const
 {
 /// --- TODO : Dessin de l'image composite
-
+    //Dessiner l'image mono située à la position i dans le tableau des images mono
+    paintImage(imgMult);
 }
 
 void AS2MWidget::initializeGL()
@@ -248,10 +293,13 @@ void AS2MWidget::paintGL()
     //paintStereo();
 
     //Dessin de l'image avec le rendu anaglyphe rouge bleu
-    paintAnagRB();
+    //paintAnagRB();
 
     //Dessin de l'image avec le rendu anaglyphe rouge cyan
     //paintAnagRC();
+
+    //Dessin de l'image avec le rendu multi
+    paintMulti();
 }
 
 void AS2MWidget::keyPressEvent(QKeyEvent *event)
