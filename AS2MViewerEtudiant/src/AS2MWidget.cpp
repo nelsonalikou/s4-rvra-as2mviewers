@@ -130,7 +130,17 @@ void AS2MWidget::fillAnag()
 void AS2MWidget::saveAnag() const
 {
 /// --- TODO : Sauvegarde des images anaglyphes
-
+    for (int pos = 0; pos < this->imgAnagRB.size(); ++pos) {
+        QPixmap pixmap(this->imgMult.width(),this->imgMult.height());
+        if(pixmap.convertFromImage(this->imgAnagRB[pos])){
+            //"R:/TP_AS2M/data/"
+            std::cout << "creation reussie" << std::endl;
+            if(pixmap.save("./results/"+NOM+"_Image_AnagRB"+pos+".png"))
+            {
+                std::cout << "sauvegarde reussie" << std::endl;
+            }
+        }
+    }
 }
 
 // calcul de l'image multiscopique
@@ -181,7 +191,7 @@ void AS2MWidget::fillMult()
     //image de sortie pour du multi
     this->imgMult = imageMulti;
     //Sauvegarde de l'image
-    //saveMult();
+    saveMult();
 
 
 }
@@ -263,7 +273,7 @@ void AS2MWidget::paintAnagRB() const
         //Dessiner l'image mono située à la position i dans le tableau des images mono
         paintImage(imgAnagRB[i]);
     }
-
+    saveAnag();
 }
 
 void AS2MWidget::paintAnagRC() const
@@ -343,5 +353,11 @@ void AS2MWidget::keyPressEvent(QKeyEvent *event)
 
         /// --- TODO : Changement du couple de vues visualisé,
         ///             décalage vers la droite et décalage vers la gauche
+    }
+
+    //ctrl + s pour sauvegarder
+    if (event->matches(QKeySequence::Save)) {
+        this->typeView = MULTI;
+        saveMult();
     }
 }
