@@ -10,6 +10,7 @@ private:
                     ANAG_RB, ANAG_RC,
                     STEREO, MULTI };
 
+    const static QString NOM;
     const static int   nbImages;                   // Nombre de vues prises en charge
     const static QSize sizeMulti;                  // Taille des filtres pour le rendu multiscopique
     /// --- TODO : Ajout d'un attribut constant statique définissant le nom des étudiants

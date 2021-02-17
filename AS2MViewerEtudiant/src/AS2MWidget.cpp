@@ -7,7 +7,9 @@
 #include <iostream>
 #include <cstdlib>
 #include <QtGlobal>
+#include <QBuffer>
 
+const QString AS2MWidget::NOM = "ALIKOU";
 const int     AS2MWidget::nbImages  = 8;
 const QSize   AS2MWidget::sizeMulti = QSize(1920,1080);
 
@@ -178,12 +180,25 @@ void AS2MWidget::fillMult()
     }
     //image de sortie pour du multi
     this->imgMult = imageMulti;
+    //Sauvegarde de l'image
+    //saveMult();
+
 
 }
 
 void AS2MWidget::saveMult() const
 {
 /// --- TODO : Sauvegarde de l'image composite
+    //Sauvegarde de l'image
+    QPixmap pixmap(this->imgMult.width(),this->imgMult.height());
+    if(pixmap.convertFromImage(this->imgMult)){
+        //"R:/TP_AS2M/data/"
+        std::cout << "creation reussie" << std::endl;
+        if(pixmap.save("./results/"+NOM+"_Image_Mult.png"))
+        {
+            std::cout << "sauvegarde reussie" << std::endl;
+        }
+    }
 
 }
 
@@ -319,7 +334,12 @@ void AS2MWidget::keyPressEvent(QKeyEvent *event)
         break;
 
         /// --- TODO : sauvegarde des images anaglyphes et de l'image composite multiscopique
-
+    case Qt::Key_Control & Qt::Key_S:
+        //Qt::ControlModifier
+        std::cout << "control" << std::endl;
+            saveMult();
+        std::cout << " s" << std::endl;
+        break;
 
         /// --- TODO : Changement du couple de vues visualisé,
         ///             décalage vers la droite et décalage vers la gauche
